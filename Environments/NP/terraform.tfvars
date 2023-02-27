@@ -17,6 +17,6 @@ last_name    = "King"
 email        = "louis@gmail.com"
 
 #Permission set 
-permission_set_name= "Least_access"
-permission_set_description= "Perm set to provide minimum access required"
-session_duration= "PT2H"
+permission_set_name        = "Least_access"
+permission_set_description = "Perm set to provide minimum access required"
+session_duration           = "PT4H"
