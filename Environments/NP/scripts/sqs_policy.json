@@ -1,0 +1,15 @@
+{
+"Version": "2012-10-17",
+"Id": "Policy1653044897049",
+"Statement": [
+{
+"Sid": "Stmt1653044849446",
+"Effect": "Allow",
+"Principal": {
+"Service": "sns.amazonaws.com"
+},
+"Action": "sqs:*",
+"Resource": "*"
+}
+]
+}
