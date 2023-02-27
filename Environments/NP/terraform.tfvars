@@ -1,20 +1,22 @@
-default_tags = {
+tags = {
   Environment          = "NP"
   CloudServiceProvider = "AWS"
   Availability         = "True"
   Backup               = "False"
 }
-### IAM role policy
-role_name_ecs_execution = "task_role"
-service_ecs_execution   = "ecs-tasks.amazonaws.com"
 
-policy_name_ecs_execution        = "EcsTaskExecution-np"
-policy_description_ecs_execution = "Policy for ECS task execution"
+#identity sso
+id_group_name  = "DEVS"
+id_description = "Group for developers"
 
-#Lambda role
-service_lambda            = "lambda.amazonaws.com"
-policy_description_lambda = "Policy for Lambda"
+#ID user sso
+user_name    = "Louis_king"
+display_name = "Charles"
+first_name   = "Louis"
+last_name    = "King"
+email        = "louis@gmail.com"
 
-role_name_lambda_2   = "l1"
-policy_name_lambda_2 = "L1"
-
+#Permission set 
+permission_set_name= "Least_access"
+permission_set_description= "Perm set to provide minimum access required"
+session_duration= "PT2H"

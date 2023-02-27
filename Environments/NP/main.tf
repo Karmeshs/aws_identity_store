@@ -1,47 +1,29 @@
-## Role-ECS execution
-module "ecs_execution_role" {
-  source       = "../../modules/iam_role"
-  default_tags = var.default_tags
-  role_name    = var.role_name_ecs_execution
-  service      = var.service_ecs_execution
+
+module "id_group" {
+  source            = "../../modules/id_group"
+  identity_store_id = tolist(data.aws_ssoadmin_instances.sso.identity_store_ids)[0]
+  description       = var.id_description
+  name              = var.id_group_name
 }
-## Policy-ECS execution
-module "ecs_execution_policy" {
-  source             = "../../modules/iam_policy"
-  default_tags       = var.default_tags
-  policy_name        = var.policy_name_ecs_execution
-  policy_description = var.policy_description_ecs_execution
-  policy_template    = data.template_file.policy_ecstaskexecution_template.rendered
+module "id_user" {
+  source            = "../../modules/id_user"
+  identity_store_id = tolist(data.aws_ssoadmin_instances.sso.identity_store_ids)[0]
+  user_name         = var.user_name
+  display_name      = var.display_name
+  first_name        = var.first_name
+  last_name         = var.last_name
+  email             = var.email
 }
-## PolicyAttachment-ECS execution
-module "ecs_execution_policy_attach1" {
-  source     = "../../modules/iam_policy_attach"
-  policy_arn = module.ecs_execution_policy.policy_arn
-  role_arn   = module.ecs_execution_role.role_id
+module "id_group_membership" {
+  source            = "../../modules/id_group_membership"
+  identity_store_id = tolist(data.aws_ssoadmin_instances.sso.identity_store_ids)[0]
+  group_id          = module.id_group.id
+  user_id           = module.id_user.id
 }
-### Role-lambda
-module "lambda_role_2" {
-  source       = "../../modules/iam_role"
-  default_tags = var.default_tags
-  role_name    = var.role_name_lambda_2
-  service      = var.service_lambda
-}
-## Policy-lambda
-module "lambda_policy_2" {
-  source             = "../../modules/iam_policy"
-  default_tags       = var.default_tags
-  policy_name        = var.policy_name_lambda_2
-  policy_description = var.policy_description_lambda
-  policy_template    = data.template_file.policy_lambda_2.rendered
-}
-## PolicyAttachment-Lambda
-module "lambda_policy_attach1" {
-  source     = "../../modules/iam_policy_attach"
-  policy_arn = module.lambda_policy_2.policy_arn
-  role_arn   = module.lambda_role_2.role_id
-}
-module "lambda_policy_attach2" {
-  source     = "../../modules/iam_policy_attach"
-  policy_arn = data.aws_iam_policy.AWSLambdaVPCAccessExecutionRole.arn
-  role_arn   = module.lambda_role_2.role_id
+module "permission_set" {
+  source            = "../../modules/permission_set"
+  instance_arn     = tolist(data.aws_ssoadmin_instances.sso.arns)[0]
+  description       = var.id_description
+  name              = var.id_group_name
+  tags =var.tags
 }
