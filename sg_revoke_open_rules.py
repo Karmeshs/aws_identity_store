@@ -1,6 +1,9 @@
 import json
 import boto3
+import logging
 
+logging.getLogger().setLevel(logging.INFO)
+log = logging.getLogger(__name__)
 # Boto 3 client initialised
 ec2 = boto3.client('ec2')
 
@@ -17,21 +20,18 @@ def lambda_handler(event, context):
     
     response = ec2.describe_security_groups()
     #Looping through all SGs
+    print("The Ingress rules with target_ip are as follows: \n")
+
     for sg in response['SecurityGroups']:
         
-        print("Security Group Name: " + sg['GroupName'])
-        print("The Ingress rules are as follows: \n")
+        # print("Security Group Name: " + sg['GroupName'])
         
         #Looping through all ingrss rules
         for ingress in sg['IpPermissions']:
-            
-            print("IP Protocol: " + ingress['IpProtocol'])
-            
+
             #If ports are defined in rule try block executes, it will revoke sg rules with target ip in it
             try:
-                print("PORT: " + str(ingress['FromPort']))
                 for ips in ingress['IpRanges']:
-                    print("IP Ranges: " + ips['CidrIp'])
                     if ips['CidrIp'] == target_ip:
                         inbound_default_rule = ec2.revoke_security_group_ingress(
                             IpProtocol=ingress['IpProtocol'],
@@ -40,20 +40,26 @@ def lambda_handler(event, context):
                             FromPort=ingress['FromPort'],
                             ToPort=ingress['ToPort']
                             )
-                        print("\n\t",inbound_default_rule,"\nDELETED !!")
-            
+                        log.info(f"'Deleting Rule of Security Group Named:': {sg['GroupName']}")
+                        log.info(f"'IP Protocol:': {ingress['IpProtocol']}")
+                        log.info(f"'PORT: ': {str(ingress['FromPort'])}")
+                        log.info(f"'IP Ranges: ': {ips['CidrIp']}")
+                        log.info(f"'Response of revoke_security_group_ingress api call ': {inbound_default_rule}")                    
+                                    
             #If ports are not defined(all traffic) in rule except block executes, it will revoke sg rules with target ip in it
             except Exception:
-                print("No value for ports and ip ranges available for this security group")
+                print("No value for ports and ip ranges available for this security group rule")
                 for ips in ingress['IpRanges']:
-                    print("IP Ranges: " + ips['CidrIp'])
                     if ips['CidrIp'] == target_ip:
                         inbound_default_rule = ec2.revoke_security_group_ingress(
                             IpProtocol=ingress['IpProtocol'],
                             CidrIp = target_ip,
                             GroupId = sg['GroupId']
                             )
-                        print("\n\t",inbound_default_rule,"\nDELETED FROM EXCEPT BLOCK !!")
-                continue
+                        log.info(f"'Deleting Rule of Security Group Named:': {sg['GroupName']}")
+                        log.info(f"'IP Protocol:': {ingress['IpProtocol']}")
+                        log.info(f"'IP Ranges: ': {ips['CidrIp']}")
+                        log.info(f"'Response of revoke_security_group_ingress api call ': {inbound_default_rule}")
+                        continue
             
     return 0
