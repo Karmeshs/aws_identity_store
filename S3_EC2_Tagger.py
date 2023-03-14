@@ -1,3 +1,72 @@
+# import json
+# import boto3
+# import logging
+
+# logging.getLogger().setLevel(logging.INFO)
+# log = logging.getLogger(__name__)
+# # Boto 3 client initialised
+# ec2 = boto3.client('ec2')
+
+# def lambda_handler(event, context):
+    
+#     """
+#     This Funtion Searches across all SGs in the account &  region where this lambda exists for any SG ingress rules having the "target_ip",
+#     if found it will check if the rule has ports mentioned or not and will make the "revoke_security_group_ingress" to remove the rules with
+#     the target_ip.
+#     """
+    
+#     #The ip to check and delete the sg rule if it exists
+#     target_ip ="0.0.0.0/0"
+    
+#     response = ec2.describe_security_groups()
+#     #Looping through all SGs
+#     print("The Ingress rules with target_ip are as follows: \n")
+
+#     for sg in response['SecurityGroups']:
+        
+#         # print("Security Group Name: " + sg['GroupName'])
+        
+#         #Looping through all ingrss rules
+#         for ingress in sg['IpPermissions']:
+
+#             #If ports are defined in rule try block executes, it will revoke sg rules with target ip in it
+#             try:
+#                 for ips in ingress['IpRanges']:
+#                     if ips['CidrIp'] == target_ip:
+#                         inbound_default_rule = ec2.revoke_security_group_ingress(
+#                             IpProtocol=ingress['IpProtocol'],
+#                             CidrIp = target_ip,
+#                             GroupId = sg['GroupId'],
+#                             FromPort=ingress['FromPort'],
+#                             ToPort=ingress['ToPort']
+#                             )
+#                         log.info(f"'Deleting Rule of Security Group Named:': {sg['GroupName']}")
+#                         log.info(f"'IP Protocol:': {ingress['IpProtocol']}")
+#                         log.info(f"'PORT: ': {str(ingress['FromPort'])}")
+#                         log.info(f"'IP Ranges: ': {ips['CidrIp']}")
+#                         log.info(f"'Response of revoke_security_group_ingress api call ': {inbound_default_rule}")                    
+                                    
+#             #If ports are not defined(all traffic) in rule except block executes, it will revoke sg rules with target ip in it
+#             except Exception:
+#                 print("No value for ports and ip ranges available for this security group rule")
+#                 for ips in ingress['IpRanges']:
+#                     if ips['CidrIp'] == target_ip:
+#                         inbound_default_rule = ec2.revoke_security_group_ingress(
+#                             IpProtocol=ingress['IpProtocol'],
+#                             CidrIp = target_ip,
+#                             GroupId = sg['GroupId']
+#                             )
+#                         log.info(f"'Deleting Rule of Security Group Named:': {sg['GroupName']}")
+#                         log.info(f"'IP Protocol:': {ingress['IpProtocol']}")
+#                         log.info(f"'IP Ranges: ': {ips['CidrIp']}")
+#                         log.info(f"'Response of revoke_security_group_ingress api call ': {inbound_default_rule}")
+#                         continue
+            
+#     return 0
+
+
+
+
 """
 
 The function adds tags to the ec2 instances and attached ebs volumes for all the instances
@@ -60,16 +129,17 @@ def set_s3_tags():
     """
     Adding Tags added to the dictionary "bucket_tags" to all the S3 buckets.
     """
-    bucket_tags = {}
+    bucket_tags = []
 
-    bucket_tags.update({"costcenter" : "XYZ"})
-    bucket_tags.update({"ownername": "CEO"})
-    bucket_tags.update({"dataclassification" : "confidential"})
-    #bucket_tags.append({"Key": "ResourceType", "Value": "S3"})
+    bucket_tags.append({"Key": "costcenter", "Value": "XYZ"})
+    bucket_tags.append({"Key": "ownername", "Value": "CTO"})
+    bucket_tags.append({"Key": "dataclassification", "Value": "confidential"})
+    # bucket_tags.append({"Key": "ResourceType", "Value": "S3"})
 
     for bucket in s3_resource.buckets.all():
         bucket.Tagging().put(Tagging={'TagSet': bucket_tags})
-        print("\n Tagged Bucket- ",bucket.name)
+        log.info(f"'Tagged Bucket': {bucket.name}")
+        log.info(f"'body': {json.dumps(bucket_tags)}")
 
     return True
 
@@ -99,3 +169,4 @@ def lambda_handler(event, context):
 
     #Function call to add tags to S3 buckets 
     set_s3_tags()
+    return 0
